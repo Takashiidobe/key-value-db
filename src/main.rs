@@ -1,6 +1,7 @@
 use axum::{
     routing::{post, get, put, delete},
     http::StatusCode,
+    http::Method,
     response::IntoResponse,
     Json, Router, extract::Path
 };
@@ -9,6 +10,7 @@ use std::net::SocketAddr;
 use uuid::Uuid;
 use serde_json::value::Value;
 use kv::{Store, Config};
+use tower_http::cors::{Any, CorsLayer};
 use std::env;
 
 fn get_bucket() -> kv::Bucket<'static, String, String> {
@@ -18,10 +20,16 @@ fn get_bucket() -> kv::Bucket<'static, String, String> {
     store.bucket::<String, String>(None).unwrap()
 }
 
+
 #[tokio::main]
 async fn main() {
+let cors = CorsLayer::new()
+    .allow_methods(vec![Method::GET, Method::POST, Method::PUT, Method::DELETE])
+    .allow_origin(Any);
+
     let port = env::var("PORT").unwrap_or("8367".to_string());
     let app = Router::new()
+        .layer(cors)
         .route("/:id", get(query_val))
         .route("/:id", put(update_val))
         .route("/:id", delete(delete_val))
