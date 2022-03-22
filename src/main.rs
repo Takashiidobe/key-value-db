@@ -25,7 +25,8 @@ fn get_bucket() -> kv::Bucket<'static, String, String> {
 async fn main() {
 let cors = CorsLayer::new()
     .allow_methods(vec![Method::GET, Method::POST, Method::PUT, Method::DELETE])
-    .allow_origin(Any);
+    .allow_origin(Any)
+    .allow_headers(Any);
 
     let port = env::var("PORT").unwrap_or("8367".to_string());
     let app = Router::new()
