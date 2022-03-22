@@ -1,5 +1,5 @@
 use axum::{
-    routing::{post, get},
+    routing::{post, get, put, delete},
     http::StatusCode,
     response::IntoResponse,
     Json, Router, extract::Path
@@ -23,6 +23,8 @@ async fn main() {
     let port = env::var("PORT").unwrap_or("8367".to_string());
     let app = Router::new()
         .route("/:id", get(query_val))
+        .route("/:id", put(update_val))
+        .route("/:id", delete(delete_val))
         .route("/", post(create_val));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port.parse::<u16>().unwrap()));
@@ -30,6 +32,31 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+async fn delete_val(
+    Path(payload): Path<QueryVal>,
+) -> impl IntoResponse {
+    let bucket = get_bucket();
+    let id = payload.id.to_owned();
+
+    bucket.remove(&id).unwrap();
+
+    StatusCode::NO_CONTENT
+}
+
+async fn update_val(
+    Path(path): Path<QueryVal>,
+    Json(payload): Json<CreateVal>,
+) -> impl IntoResponse {
+    let id = path.id;
+    let value = payload.value;
+    let str_val = serde_json::to_string(&value).unwrap();
+    let bucket = get_bucket();
+
+    bucket.set(&id, &str_val).unwrap();
+
+    (StatusCode::OK, Json(Val { id, value }))
 }
 
 async fn create_val(
@@ -44,6 +71,7 @@ async fn create_val(
 
     (StatusCode::CREATED, Json(Val { id, value }))
 }
+
 async fn query_val(
     Path(payload): Path<QueryVal>,
 ) -> impl IntoResponse {

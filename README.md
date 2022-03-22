@@ -4,20 +4,15 @@ Key Value Database using `kv` and `axum`.
 
 ## Usage
 
-This project supports two requests, GET `/:id` and POST `/`.
+This project supports CRUD operations:
 
-You can GET an `id` like so: `https://kv.takashiidobe.com/1d1a4354-19d9-4c8b-b38d-5ca0994c114f`
+- GET, PUT, DELETE `/:id`
+- and POST at `/`.
 
-Which returns the id and the value:
-
-```json
-{ "id": "1d1a4354-19d9-4c8b-b38d-5ca0994c114f", "value": { "x": [1, 2, 3] } }
-```
-
-You can POST as well:
+You can POST a payload at the root:
 
 ```sh
-curl -X POST -i https://kv.takashiidobe.com -H 'Content-Type: application/json' --data '{"value": { "x": [1,2,3] } }'
+curl -X POST -i https://localhost:8367 -H 'Content-Type: application/json' --data '{"value": { "x": [1,2,3] } }'
 ```
 
 The schema takes a key called `value`, where you can pass any JSON object.
@@ -27,3 +22,31 @@ For example, POSTing the above returns:
 ```json
 { "id": "9a97c3cd-3f2c-43e0-b17a-3a905d134ca1", "value": { "x": [1, 2, 3] } }
 ```
+
+You can GET an `id` like so: `https://localhost:8367/9a97c3cd-3f2c-43e0-b17a-3a905d134ca1`
+
+Which returns the id and the value:
+
+```json
+{ "id": "9a97c3cd-3f2c-43e0-b17a-3a905d134ca1", "value": { "x": [1, 2, 3] } }
+```
+
+You can PUT a value:
+
+```sh
+curl -X PUT -i http://localhost:8367/9a97c3cd-3f2c-43e0-b17a-3a905d134ca1 -H 'Content-Type: application/json' --data '{ "value": 1 }'
+```
+
+Which returns the id and the updated value:
+
+```json
+{ "id": "9a97c3cd-3f2c-43e0-b17a-3a905d134ca1", "value": 1 }
+```
+
+You can DELETE a value:
+
+```sh
+curl -X DELETE -i http://localhost:8367/9a97c3cd-3f2c-43e0-b17a-3a905d134ca1 -H 'Content-Type: application/json'
+```
+
+Which returns nothing but a status code on proper delete:
